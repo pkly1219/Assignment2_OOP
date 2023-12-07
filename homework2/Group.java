@@ -8,6 +8,7 @@ public  class Group extends DefaultMutableTreeNode implements Component {
 
     private String groupID;  // Unique identifier for the group
     private ArrayList<Component> componentList = new ArrayList<>(); //To store the user and group nodes
+    private long creationTime; //To store the group creation time
 
     // Constructor
     public Group(String groupID) {
@@ -31,6 +32,13 @@ public  class Group extends DefaultMutableTreeNode implements Component {
            C.accept(visitor);
        }
 
+    }
+     public long getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
     }
 
 

@@ -16,6 +16,10 @@ public class User implements Component, Observer, Subject {
 
     // JTextArea where the newsFeed will be displayed
     private JTextArea newsFeed = new JTextArea();
+
+    private long creationTime; //To store the user creation time
+
+    private long lastUpdateTime; // to strore the update tweet time
     public User(String userID)
     {
         this.userID = userID;
@@ -87,6 +91,22 @@ public class User implements Component, Observer, Subject {
             observer.update(this);
 
         }
+    }
+
+     public long getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public long getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(long lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
 }

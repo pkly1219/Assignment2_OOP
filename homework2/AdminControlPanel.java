@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class AdminControlPanel {
 
-    private ArrayList<User> LUser;      //Store User Object
+    private ArrayList <User> LUser;      //Store User Object
     private ArrayList<String> LUserName;    //Store username
     private ArrayList<String> LGroupName; //Store Groupname/ groupID
     DefaultTreeModel treeModel; //Manage the tree structure
@@ -27,9 +27,9 @@ public class AdminControlPanel {
         JTree tree;
         JFrame frame;
         JTextField userID, groupID;
-        JButton addUser, addGroup, UserView, UserTotal, GroupTotal, MessagesTotal, PositivePercentage,verifyID, lastUpdate;;
+        JButton addUser, addGroup, UserView, UserTotal, GroupTotal, MessagesTotal, PositivePercentage, verifyID, lastUpdate;
 
-        //Initialize user and username lists
+        //Initialize user, username, groupname lists
         LUser = new ArrayList<>(20);
         LUserName = new ArrayList<>(20);
         LGroupName = new ArrayList<>(20);
@@ -78,7 +78,7 @@ public class AdminControlPanel {
                 // Create a new User
                 User newUserNode = new User(userID.getText());
                 newUserNode.setCreationTime(System.currentTimeMillis());
-                
+
                 // Add the user's username to the list of usernames
                 LUserName.add(userID.getText());
                 LUser.add(newUserNode);
@@ -135,7 +135,7 @@ public class AdminControlPanel {
 
                 //Print out the creation time of the group
                 System.out.println("Group "+ groupID.getText() + " is created at: "+ newGroup.getCreationTime());
-                
+
                 topComponentList.add(newGroup);
                 //Increase number of groups
                 groupCount++;
@@ -181,6 +181,7 @@ public class AdminControlPanel {
 
         );
 
+
         //ActionListener for the Last Updated User Button
         lastUpdate.addActionListener(new ActionListener() {
             @Override
@@ -194,14 +195,13 @@ public class AdminControlPanel {
 
             }
         });
-
         //ActionListener for the UserTotal Button
         UserTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(frame,
-                               "Total number of users " + userCount,
-                                 "User Total", JOptionPane.INFORMATION_MESSAGE);
+                        "Total number of users " + userCount,
+                        "User Total", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
@@ -333,7 +333,7 @@ public class AdminControlPanel {
         newFeedPanel.add(newFeed);
         newFeed.setPreferredSize(new Dimension(500, 600));
 
-          // Create a label for the creation time
+       // Create a label for the creation time
        JLabel creationTimeLabel = new JLabel("Creation time of the user is: " + currentName.getCreationTime());
 
        // Combine all panels to the main panel
@@ -383,7 +383,8 @@ public class AdminControlPanel {
                 long currentTime = System.currentTimeMillis();
 
                 // Construct the tweet message
-                String string = currentName.getUserID() + ": " +  tweetMessage.getText();
+                String string =currentTime +": "+ currentName.getUserID() + ": " +  tweetMessage.getText();
+
 
                 // Append the text to the current user's newsFeed and update the messageModel
                 currentNewsFeed.setText(currentNewsFeed.getText() + "\n" + string);
@@ -401,7 +402,7 @@ public class AdminControlPanel {
         });
     }
 
-      boolean isIDUnique (ArrayList<String> list1, ArrayList<String> list2)
+    boolean isIDUnique (ArrayList<String> list1, ArrayList<String> list2)
     {
         //copy the list1 to newlist
         ArrayList <String> newlist = new ArrayList<>(list1);
@@ -428,6 +429,8 @@ public class AdminControlPanel {
         return true;
 
     }
+
+
 
     // Method to create and display the UI
     void runApp()

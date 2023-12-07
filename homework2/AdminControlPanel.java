@@ -9,12 +9,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.Map;
 
 public class AdminControlPanel {
 
     private ArrayList<User> LUser;      //Store User Object
     private ArrayList<String> LUserName;    //Store username
+    private ArrayList<String> LGroupName; //Store Groupname/ groupID
     DefaultTreeModel treeModel; //Manage the tree structure
     private int userCount, groupCount;  //tracking the number of users and groups are added
 
@@ -25,11 +27,13 @@ public class AdminControlPanel {
         JTree tree;
         JFrame frame;
         JTextField userID, groupID;
-        JButton addUser, addGroup, UserView, UserTotal, GroupTotal, MessagesTotal, PositivePercentage;
+        JButton addUser, addGroup, UserView, UserTotal, GroupTotal, MessagesTotal, PositivePercentage,verifyID, lastUpdate;;
 
         //Initialize user and username lists
         LUser = new ArrayList<>(20);
         LUserName = new ArrayList<>(20);
+        LGroupName = new ArrayList<>(20);
+        LGroupName.add("Root"); //Add the first group named Root to the list name of group
 
 
         // Creating the root node
@@ -50,7 +54,7 @@ public class AdminControlPanel {
         JScrollPane treeView = new JScrollPane(tree);
         treeView.setPreferredSize(new Dimension(200, 400));
         JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(5,5,5,5));
+        rightPanel.setLayout(new GridLayout(6,5,5,5));
 
         // Create components for rightPanel
         userID = new JTextField();
@@ -62,6 +66,8 @@ public class AdminControlPanel {
         GroupTotal = new JButton("Show Group Total");
         MessagesTotal = new JButton("Show Messages Total");
         PositivePercentage = new JButton("Show Positive Percentage Total");
+        verifyID = new JButton("User/Group ID Verification");
+        lastUpdate = new JButton("Last Updated User");
 
 
 
@@ -71,7 +77,8 @@ public class AdminControlPanel {
             public void actionPerformed(ActionEvent e) {
                 // Create a new User
                 User newUserNode = new User(userID.getText());
-
+                newUserNode.setCreationTime(System.currentTimeMillis());
+                
                 // Add the user's username to the list of usernames
                 LUserName.add(userID.getText());
                 LUser.add(newUserNode);
@@ -116,13 +123,19 @@ public class AdminControlPanel {
 
                 // Create a new Group instance and initialize its composite list
                 Group newGroup = new Group(groupID.getText());
+                //Set the time creation time for the new group
+                newGroup.setCreationTime(System.currentTimeMillis());
                 ArrayList<Component> newList = new ArrayList<>();
                 newGroup.setList(newList);
+                LGroupName.add(groupID.getText());
 
                 // Add the new group to the Root
                 Group rootGroup = (Group) root;
                 ArrayList<Component> topComponentList = rootGroup.getComponentList();
 
+                //Print out the creation time of the group
+                System.out.println("Group "+ groupID.getText() + " is created at: "+ newGroup.getCreationTime());
+                
                 topComponentList.add(newGroup);
                 //Increase number of groups
                 groupCount++;
@@ -143,6 +156,42 @@ public class AdminControlPanel {
                 if (!selectedNode.getAllowsChildren()) {
                     showUserView(selectedNode);
                 }
+            }
+        });
+
+        // ActionListener for the VerifyID button
+        verifyID.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+
+                    // Check if the ID is unique across users and groups
+                    if (isIDUnique(LUserName, LGroupName)) {
+                        JOptionPane.showMessageDialog(frame,
+                                "" +
+                                        "All the IDs are valid ",
+                                "ID Verification", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(frame,
+                                "All the IDs are  not valid " ,
+                                "ID Verification", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+            }
+
+        );
+
+        //ActionListener for the Last Updated User Button
+        lastUpdate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LastUpdatedUser visitedUser = new LastUpdatedUser();
+                root.accept(visitedUser);
+                User user = visitedUser.getLastUpdateUser();
+                JOptionPane.showMessageDialog(frame,
+                        "Last Updated User:  " + user.getUserID(),
+                        "Last Update", JOptionPane.INFORMATION_MESSAGE);
+
             }
         });
 
@@ -215,6 +264,8 @@ public class AdminControlPanel {
         rightPanel.add(addGroup);
         rightPanel.add(UserView);
         rightPanel.add(new JLabel()); // Placeholder for alignment
+        rightPanel.add(verifyID);
+        rightPanel.add(lastUpdate);
         rightPanel.add(UserTotal);
         rightPanel.add(GroupTotal);
         rightPanel.add(MessagesTotal);
@@ -242,7 +293,7 @@ public class AdminControlPanel {
         User currentName = LUser.get(index);
 
        // Create panels for different sections of the user view
-        JPanel Panel = new JPanel(new GridLayout(4, 0, 0, 20));
+        JPanel Panel = new JPanel(new GridLayout(5, 0, 0, 20));
         JPanel newFeedPanel = new JPanel();
 
        // Retrieve the user's listModel to avoid data loss on window reopening
@@ -280,14 +331,18 @@ public class AdminControlPanel {
         JScrollPane newFeed = new JScrollPane(currentNewsFeed);
         newFeed.setBorder(BorderFactory.createTitledBorder("News Feed: "));
         newFeedPanel.add(newFeed);
-        newFeed.setPreferredSize(new Dimension(500, 300));
+        newFeed.setPreferredSize(new Dimension(500, 600));
+
+          // Create a label for the creation time
+       JLabel creationTimeLabel = new JLabel("Creation time of the user is: " + currentName.getCreationTime());
 
        // Combine all panels to the main panel
+        Panel.add(creationTimeLabel);
         Panel.add(followUserPanel);
         Panel.add(followingListPanel);
         Panel.add(TweetPanel);
         Panel.add(newFeedPanel);
-        Panel.setPreferredSize(new Dimension(500, 500));
+        Panel.setPreferredSize(new Dimension(500, 700));
 
        // Add the main panel to the new frame and configure the frame
         frame2.add(Panel);
@@ -324,12 +379,17 @@ public class AdminControlPanel {
         postTweet.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Get the current time when the tweet is posted
+                long currentTime = System.currentTimeMillis();
+
                 // Construct the tweet message
                 String string = currentName.getUserID() + ": " +  tweetMessage.getText();
 
                 // Append the text to the current user's newsFeed and update the messageModel
                 currentNewsFeed.setText(currentNewsFeed.getText() + "\n" + string);
                 messageModel.addElement(currentNewsFeed);
+
+                currentName.setLastUpdateTime(currentTime);
 
                 // Notifying all the observers(followers)
                 currentName.notifyObserver();
@@ -339,6 +399,34 @@ public class AdminControlPanel {
 
             }
         });
+    }
+
+      boolean isIDUnique (ArrayList<String> list1, ArrayList<String> list2)
+    {
+        //copy the list1 to newlist
+        ArrayList <String> newlist = new ArrayList<>(list1);
+
+        //add all elements of list2 to newlist
+        newlist.addAll(list2);
+        Map<String, Integer> count = new HashMap<>();
+
+        //Count the occurrence of each element in the new list to check for duplicate
+        for(String str: newlist)
+        {
+            count.put(str,count.getOrDefault(str, 0) + 1);
+
+        }
+
+        //if any element appears more than once in the list
+        if(count.values().stream().anyMatch(num -> num > 1))
+            return false;
+
+        //Check if any element contains a space
+        if(newlist.stream().anyMatch(s -> s.contains(" ")))
+            return false;
+
+        return true;
+
     }
 
     // Method to create and display the UI
